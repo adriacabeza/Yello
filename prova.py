@@ -72,7 +72,7 @@ network_predict = lib.network_predict
 network_predict.argtypes = [c_void_p, POINTER(c_float)]
 
 net = load_net(b"/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg", b"/home/adria/Documents/darknet/yolov3-tiny.weights", 0)
-meta = load_meta(b"/home/adria/Documents/darknet/data/coco.names")
+meta = load_meta(b"/home/adria/Documents/darknet/cfg/tiny.data")
 
 
 def commands():
@@ -113,6 +113,9 @@ def array_to_image(arr):
 
 
 def video():
+    nms = .45
+    thresh=.8
+    hier_thresh=.5
     try:
         retry = 3
         container = None
@@ -131,41 +134,42 @@ def video():
                 if 0 < frame_skip:
                     frame_skip = frame_skip - 1
                     continue
-                start_time = time.time()
                 image = frame.to_image()
-
-                im, image = array_to_image(image)
-                rgbgr_image(im)
-                num = c_int(0)
-                pnum = pointer(num)
-                predict_image(net, im)
-                dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-                num = pnum[0]
-                if (nms): do_nms_obj(dets, num, meta.classes, nms);
-                # res = []
-                for j in range(num):
-                    for i in range(meta.classes):
-                        if dets[j].prob[i] > 0:
-                            b = dets[j].bbox
-                            x1 = int(b.x - b.w / 2.)
-                            y1 = int(b.y - b.h / 2.)
-                            x2 = int(b.x + b.w / 2.)
-                            y2 = int(b.y + b.h / 2.)
-                            cv2.rectangle(frame, (x1, y1), (x2, y2), classes_box_colors[i], 2)
-                            cv2.putText(frame, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.LINE_AA)
-                                    
-                cv2.imshow('output', frame)
-
+                try:
+                    start_time = time.time()
+                    rgb_frame = cv2.cvtColor(cv2.UMAT(image), cv2.COLOR_BGR2RGB)
+                    im, arr = array_to_image(rgb_frame)
                 
-                
-                cv2.imshow('Original', image)
-                cv2.waitKey(1)
-                if frame.time_base < 1.0/60:
-                    time_base = 1.0/60
-                else:
-                    time_base = frame.time_base
-                frame_skip = int((time.time() - start_time)/time_base)
-                    
+                    num = c_int(0)
+                    pnum = pointer(num)
+                    predict_image(net, im)
+                    dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
+                    num = pnum[0]
+                    if (nms): do_nms_obj(dets, num, meta.classes, nms);
+                    # res = []
+                    for j in range(num):
+                        for i in range(meta.classes):
+                            if dets[j].prob[i] > 0:
+                                b = dets[j].bbox
+                                x1 = int(b.x - b.w / 2.)
+                                y1 = int(b.y - b.h / 2.)
+                                x2 = int(b.x + b.w / 2.)
+                                y2 = int(b.y + b.h / 2.)
+                                cv2.rectangle(image, (x1, y1), (x2, y2), classes_box_colors[i], 2)
+                                cv2.putText(image, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.LINE_AA)
+                                        
+                    cv2.imshow('output', image)
+                    cv2.waitKey(1)
+                    if frame.time_base < 1.0/60:
+                        time_base = 1.0/60
+                    else:
+                        time_base = frame.time_base
+                    frame_skip = int((time.time() - start_time)/time_base)
+                except Exception as exp:
+                    print(exp)
+
+            if cv2.waitKey(1) == ord('q'):
+                break        
 
     except Exception as ex:
         exc_type, exc_value, exc_traceback = sys.exc_info()
