@@ -16,8 +16,9 @@ RUN \
 	build_essential \
 	git \
 	python-pip \
-	wget && \
-	
+	wget  \
+ 	libavdevice-dev \
+	libavfilter-dev && \	
 
 # BUILD REPOSITORY
 RUN \
