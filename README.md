@@ -65,6 +65,12 @@ layer     filters    size              input                output
    29 conv    425  1 x 1 / 1    13 x  13 x1024   ->    13 x  13 x 425
    30 detection
 Loading weights from /root/yolo.weights...Done!
-```
+````
+
+
 ## Execute orders to the drone
+
+To execute orderts to the drone, you have to send packets with the hex code of the instruction that is desired. Here there is the table of codes:
+
+
 ## Demo video with Tiny-Yolo
