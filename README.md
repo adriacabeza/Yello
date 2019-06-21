@@ -18,7 +18,8 @@ Moreover, you can add functionalities easily in the project. Already implemented
 
 ## Installation
 
-First you have to clone the repository, then to build the docker write in the folder: 
+First you have to clone the repository. 
+To continue you need to have docker installed (follow the instructions here https://docs.docker.com/install/). Then, to build the docker write in the repository folder: 
 ``` 
 docker build -t yello .
 ```
@@ -72,5 +73,21 @@ Loading weights from /root/yolo.weights...Done!
 
 To execute orderts to the drone, you have to send packets with the hex code of the instruction that is desired. Here there is the table of codes:
 
+| Code   | Instruction |
+|--------|-------------|
+| 0x0054 | Take off    |
+| 0x0055 | Land        |
+
+ And here a code snippet of how to do it:
+ 
+ And here a code snippet of how to do it:
+```python
+drone = tellopy.Tello()
+drone.connect()
+drone.wait_for_connection(60.0)
+pkt = Packet(0x0054)
+pkt.fixup()
+drone.send_packet(pkt)
+```
 
 ## Demo video with Tiny-Yolo
