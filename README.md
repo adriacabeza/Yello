@@ -26,7 +26,7 @@ docker build -t yello .
 Then you will be able to do run the docker by typing:
 
 ```
-docker run --rm -it --name yello darknet bash
+docker run --rm -it --name yello bash
 ```
 
 To test if everything went correct, you can run a test with tiny-yolo:
@@ -65,3 +65,6 @@ layer     filters    size              input                output
    29 conv    425  1 x 1 / 1    13 x  13 x1024   ->    13 x  13 x 425
    30 detection
 Loading weights from /root/yolo.weights...Done!
+```
+## Execute orders to the drone
+## Demo video with Tiny-Yolo
