@@ -27,11 +27,12 @@ docker build --no-cache -t yello .
 Then you will be able to do run the docker by typing:
 
 ```
-docker run --rm -it --name yello bash
+docker run -it yello bash 
 ```
 
 To test if everything went correct, you can run a test with tiny-yolo:
 ````
+# cd darknet 
 #./darknet detector test cfg/coco.data cfg/yolov3-tiny.cfg /root/yolov3-tiny.weights data/dog.jpg
 layer     filters    size              input                output
     0 conv     32  3 x 3 / 1   416 x 416 x   3   ->   416 x 416 x  32
@@ -66,12 +67,18 @@ layer     filters    size              input                output
    29 conv    425  1 x 1 / 1    13 x  13 x1024   ->    13 x  13 x 425
    30 detection
 Loading weights from /root/yolo.weights...Done!
+data/dog.jpg: Predicted in 0.844487 seconds.
+dog: 57%
+car: 52%
+truck: 56%
+car: 62%
+bicycle: 59%
 ````
 
 
 ## Execute orders to the drone
 
-To execute orderts to the drone, you have to send packets with the hex code of the instruction that is desired. Here there is the table of codes:
+To execute orderts to the drone, you have to send packets with the hex code of the instruction that is desired. Here we can find some examples:
 
 | Code   | Instruction |
 |--------|-------------|

@@ -48,10 +48,10 @@ RUN \
 # BUILD REPOSITORY 
 RUN \
 	git clone https://github.com/hanyazou/TelloPy.git 
-
+# TO BE ADDED: insert a git clone of my repository
 
 # INSTALL DEPENDENCIES
-ADD requirements.txt /app/
+ADD requirements.txt .
 RUN pip install -r requirements.txt 
 
 # default command
