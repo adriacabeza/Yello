@@ -21,9 +21,9 @@ Moreover, you can add functionalities easily in the project. Already implemented
 First you have to clone the repository. 
 To continue you need to have docker installed (follow the instructions here https://docs.docker.com/install/). Then, to build the docker write in the repository folder: 
 ``` 
-docker build -t yello .
+docker build --no-cache -t yello .
 ```
-
+> NOTE: It can last several minutes to finish building.
 Then you will be able to do run the docker by typing:
 
 ```
@@ -32,7 +32,7 @@ docker run --rm -it --name yello bash
 
 To test if everything went correct, you can run a test with tiny-yolo:
 ````
-# ./darknet detector test cfg/coco.data cfg/yolo.cfg /root/yolo.weights data/dog.jpg
+#./darknet detector test cfg/coco.data cfg/yolov3-tiny.cfg /root/yolov3-tiny.weights data/dog.jpg
 layer     filters    size              input                output
     0 conv     32  3 x 3 / 1   416 x 416 x   3   ->   416 x 416 x  32
     1 max          2 x 2 / 2   416 x 416 x  32   ->   208 x 208 x  32
@@ -77,9 +77,10 @@ To execute orderts to the drone, you have to send packets with the hex code of t
 |--------|-------------|
 | 0x0054 | Take off    |
 | 0x0055 | Land        |
+| 0x005e | Palm Land   |
+| 0x0030 | Take Picture|
+| 0x005d | Throw & Go  |
 
- And here a code snippet of how to do it:
- 
  And here a code snippet of how to do it:
 ```python
 drone = tellopy.Tello()
@@ -89,5 +90,6 @@ pkt = Packet(0x0054)
 pkt.fixup()
 drone.send_packet(pkt)
 ```
+However it really depends on what you want to do since there are several different structures of packets. For more information please look at the [docs](https://github.com/adriacabeza/Yello/tree/master/docs/README.md)
 
 ## Demo video with Tiny-Yolo

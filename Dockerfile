@@ -13,12 +13,19 @@ RUN \
 	autoconf \
 	automake \
 	libtool \
-	build_essential \
+	build-essential \
 	git \
 	python-pip \
+	python-dev \
+	pkg-config \
 	wget  \
  	libavdevice-dev \
-	libavfilter-dev && \	
+	libavfilter-dev \
+	libavformat-dev \
+	libavcodec-dev \
+	libavutil-dev \
+	libswscale-dev \
+	libavresample-dev 
 
 # BUILD REPOSITORY
 RUN \
@@ -34,15 +41,21 @@ RUN \
 RUN \
 	cd darknet/ && \
 	./darknet && \
-	./darknet detector test cfg/coco.data cfg/yolo3-tiny.cfg /root/yolov3-tiny.weights 
+	./darknet detector test cfg/coco.data cfg/yolov3-tiny.cfg /root/yolov3-tiny.weights data/dog.jpg
 
 # TELLOPY
 
 # BUILD REPOSITORY 
-RUN \ 
+RUN \
+	git clone https://github.com/hanyazou/TelloPy.git 
 
 
+# INSTALL DEPENDENCIES
+ADD requirements.txt /app/
+WORKDIR /app
+RUN pip install -r requirements.txt 
 
+ADD . /app
 # default command
 CMD ["bash"]
 

@@ -1,0 +1,6 @@
+av
+tellopy
+opencv-python
+image
+pygame
+

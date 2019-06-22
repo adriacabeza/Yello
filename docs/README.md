@@ -46,7 +46,7 @@ bytearray([0xcc,0,0,0,0x68,code & 0xff,(code >> 8) & 0xff, 0,0])
 
 ## Sending packets
 The drone address is **192.168.10.1** and the port depends on what we want to do. The default is **9000**, but for exemple to send a connnection request we have **9617,150 (port0 = (int(port/1000)%10) << 4 | (int(port/100)%10)), 23 (port1 = (int(port/10) % 10) << 4 | (int(port/1) % 10)
-), ** or 6038 for video stuff. We communicate with the drone by UDP sockets. 
+),** or 6038 for video stuff. We communicate with the drone by UDP sockets. 
 
 ## Things I do need for Yello
 - Protocol
