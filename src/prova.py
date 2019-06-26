@@ -1,12 +1,9 @@
 import datetime
 from subprocess import Popen, PIPE
-import threading
-import socket
 import time
 import struct
 import sys
 import os
-from . protocol import *
 import tellopy
 import cv2.cv2 as cv2  
 import av
@@ -17,7 +14,9 @@ import numpy
 
 drone = tellopy.Tello()
 drone.connect()
-drone.wait_for_connection(60.0)
+drone.wait_for_connection(30.0)
+protocol = tellopy._internal.protocol
+
 
 class BOX(Structure):
     _fields_ = [("x", c_float),
@@ -76,7 +75,7 @@ meta = load_meta(b"/home/adria/Documents/darknet/cfg/tiny.data")
 
 
 def commands():
-    pkt = Packet(0x0054)
+    pkt = protocol.Packet(0x0054)
     pkt.fixup()
     drone.send_packet(pkt)
     # drone.takeoff()
@@ -85,8 +84,7 @@ def commands():
     print("2 secs")
 
 
-    # drone.flip_forwardright()
-    pkt = Packet(0x005c, 0x70)
+    pkt = protocol.Packet(0x005c, 0x70)
     pkt.add_byte(4)
     pkt.fixup()
     drone.send_packet(pkt)
@@ -94,9 +92,8 @@ def commands():
 
     time.sleep(4)
     print("4 secs")
-    # drone.land()
 
-    pkt = Packet(0x0055)
+    pkt = protocol.Packet(0x0055)
     pkt.add_byte(0x00)
     pkt.fixup()
     drone.send_packet(pkt)
@@ -182,8 +179,8 @@ def video():
 
 
 def main():
-    # commands()
-    video()
+   commands()
+   #video()
 
 
 if __name__ == '__main__':

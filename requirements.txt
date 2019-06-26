@@ -3,4 +3,4 @@ tellopy
 opencv-python
 image
 pygame
-
+opencv-contrib-python
