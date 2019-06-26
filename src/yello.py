@@ -25,7 +25,6 @@ args = parser.parse_args()
 drone = tellopy.Tello()
 drone.connect()
 drone.wait_for_connection(30.0)
-protocol = tellopy._internal.protocol
 
 
 class BOX(Structure):

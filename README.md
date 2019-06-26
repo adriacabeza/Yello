@@ -94,22 +94,25 @@ Or use the Tellopy API and call a method that does it for you. Let's see some ex
 ** Sending the packet**
 ```python
 drone = tellopy.Tello()
+protcol = tellopy._internal.protocol()
 drone.connect()
 drone.wait_for_connection(60.0)
 
 # take_off
-pkt = tellopy._internal.protocol.Packet(0x0054)
+pkt = protocol.Packet(0x0054)
 pkt.fixup()
 drone.send_packet(pkt)
 sleep(2)
+
 # flip to the right
-pkt = Packet(0x005c, 0x70)
+pkt = protocol.Packet(0x005c, 0x70)
 pkt.add_byte(4)
 pkt.fixup()
 drone.send_packet(pkt)
 sleep(2)
+
 # land
-pkt = Packet(0x0055)
+pkt = protocol.Packet(0x0055)
 pkt.add_byte(0x00)
 pkt.fixup()
 drone.send_packet(pkt)
@@ -118,22 +121,29 @@ drone.send_packet(pkt)
 
 
 **Calling the API**
-``python
+
+```python
 drone = tellopy.Tello()
 drone.connect()
 drone.wait_for_connection(60.0)
 drone.take_off()
 sleep(2)
+
 drone.flip_forwardright()
 sleep(2)
+
 drone.land()
 ```
+
 However it really depends on what you want to do since there are several different structures of packets. If you want to know more about how it works check the source code of the API. 
 
+
 ## Demo video with Tiny-Yolo
+## Tello with markers
 
 ## Additional information about the drone
 
+- **Tello communication protocol** = UDP
 - **Tello IP** = 192.168.10.1
 - **Tello Port for commands** = 8899
 - **Tello Port for video** = 6038
