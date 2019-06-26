@@ -7,10 +7,20 @@ import os
 import tellopy
 import cv2.cv2 as cv2  
 import av
+import argparse
 import traceback
 
 from ctypes import *
 import numpy
+
+
+
+parser = argparse.ArgumentParser(description='Insert parameters for Yello')
+parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/home/adria/Documents/darknet/libdarknet.so")
+parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg"
+parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/home/adria/Documents/darknet/cfg/tiny.data")
+parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/home/adria/Documents/darknet/yolov3-tiny.weights")
+args = parser.parse_args()
 
 drone = tellopy.Tello()
 drone.connect()
@@ -45,7 +55,7 @@ class METADATA(Structure):
     
 
 
-lib = CDLL("/home/adria/Documents/darknet/libdarknet.so", RTLD_GLOBAL)
+lib = CDLL(args.library,RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]
@@ -70,33 +80,8 @@ predict_image.restype = POINTER(c_float)
 network_predict = lib.network_predict
 network_predict.argtypes = [c_void_p, POINTER(c_float)]
 
-net = load_net(b"/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg", b"/home/adria/Documents/darknet/yolov3-tiny.weights", 0)
-meta = load_meta(b"/home/adria/Documents/darknet/cfg/tiny.data")
-
-
-def commands():
-    pkt = protocol.Packet(0x0054)
-    pkt.fixup()
-    drone.send_packet(pkt)
-    # drone.takeoff()
-
-    time.sleep(2)
-    print("2 secs")
-
-
-    pkt = protocol.Packet(0x005c, 0x70)
-    pkt.add_byte(4)
-    pkt.fixup()
-    drone.send_packet(pkt)
-
-
-    time.sleep(4)
-    print("4 secs")
-
-    pkt = protocol.Packet(0x0055)
-    pkt.add_byte(0x00)
-    pkt.fixup()
-    drone.send_packet(pkt)
+net = load_net(args.config.encode(),args.weights.encode(), 0)
+meta = load_meta(args.data.encode())
 
 
 def array_to_image(arr):
@@ -179,8 +164,7 @@ def video():
 
 
 def main():
-   commands()
-   #video()
+   video()
 
 
 if __name__ == '__main__':
