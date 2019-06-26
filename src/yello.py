@@ -11,13 +11,13 @@ import argparse
 import traceback
 
 from ctypes import *
-import numpy
+import numpy as np
 
 
 
 parser = argparse.ArgumentParser(description='Insert parameters for Yello')
 parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/home/adria/Documents/darknet/libdarknet.so")
-parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg"
+parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg")
 parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/home/adria/Documents/darknet/cfg/tiny.data")
 parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/home/adria/Documents/darknet/yolov3-tiny.weights")
 args = parser.parse_args()
@@ -82,6 +82,8 @@ network_predict.argtypes = [c_void_p, POINTER(c_float)]
 net = load_net(args.config.encode(),args.weights.encode(), 0)
 meta = load_meta(args.data.encode())
 
+classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
+classes_font_colors = [(255, 255, 0), (0, 255, 255)]
 
 def array_to_image(arr):
     # need to return old values to avoid python freeing memory
@@ -90,7 +92,7 @@ def array_to_image(arr):
     arr = np.ascontiguousarray(arr.flat, dtype=np.float32) / 255.0
     data = arr.ctypes.data_as(POINTER(c_float))
     im = IMAGE(w,h,c,data)
-    return im, arr
+    return im,arr
 
 
 def video():
@@ -115,12 +117,10 @@ def video():
                 if 0 < frame_skip:
                     frame_skip = frame_skip - 1
                     continue
-                image = frame.to_image()
                 try:
                     start_time = time.time()
-                    rgb_frame = cv2.cvtColor(cv2.UMAT(image), cv2.COLOR_BGR2RGB)
-                    im, arr = array_to_image(rgb_frame)
-                
+                    im, array = array_to_image(np.array(frame.to_image()))
+                    image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
                     num = c_int(0)
                     pnum = pointer(num)
                     predict_image(net, im)
@@ -129,17 +129,21 @@ def video():
                     if (nms): do_nms_obj(dets, num, meta.classes, nms);
                     # res = []
                     for j in range(num):
+                        print('Debug0')
                         for i in range(meta.classes):
+                            print('Debug1')
                             if dets[j].prob[i] > 0:
                                 b = dets[j].bbox
                                 x1 = int(b.x - b.w / 2.)
                                 y1 = int(b.y - b.h / 2.)
                                 x2 = int(b.x + b.w / 2.)
                                 y2 = int(b.y + b.h / 2.)
-                                cv2.rectangle(image, (x1, y1), (x2, y2), classes_box_colors[i], 2)
-                                cv2.putText(image, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.LINE_AA)
-                                        
-                    cv2.imshow('output', image)
+                                print((x1,y1),(x2,y2))
+                                cv2.rectangle(array, (x1, y1), (x2, y2), classes_box_colors[i], 2)
+                                cv2.puttext(array, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.line_aa)
+                                print('Detected: {}'.format(meta.names[i]))
+                    cv2.imshow('Original', image) 
+                    cv2.imshow('Output', array)
                     cv2.waitKey(1)
                     if frame.time_base < 1.0/60:
                         time_base = 1.0/60
