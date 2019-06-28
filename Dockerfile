@@ -51,8 +51,8 @@ RUN \
 
 # YELLO
 ## BUILD REPOSITORY
-RUN \
-	git clone https://github.com/adriacabeza/Yello.git 
+#RUN \
+#	git clone https://github.com/adriacabeza/Yello.git 
 
 # INSTALL DEPENDENCIES
 ADD requirements.txt .
