@@ -14,7 +14,7 @@ from ctypes import *
 import numpy as np
 
 
-
+#TODO: change defaults to the ones from docker
 parser = argparse.ArgumentParser(description='Insert parameters for Yello')
 parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/home/adria/Documents/darknet/libdarknet.so")
 parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg")
@@ -82,7 +82,8 @@ network_predict.argtypes = [c_void_p, POINTER(c_float)]
 net = load_net(args.config.encode(),args.weights.encode(), 0)
 meta = load_meta(args.data.encode())
 
-classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
+#TODO: control drone with hands. Example: red for palmup --> stop, green for thumbsup --> go
+classes_box_colors = [(0, 0, 255), (0, 255, 0)]
 classes_font_colors = [(255, 255, 0), (0, 255, 255)]
 
 def array_to_image(arr):
@@ -97,8 +98,8 @@ def array_to_image(arr):
 
 def video():
     nms = .45
-    thresh=.8
-    hier_thresh=.5
+    thresh=.5
+    hier_thresh=.3
     try:
         retry = 3
         container = None
@@ -113,7 +114,7 @@ def video():
         # skip first 300 frames
         frame_skip = 300
         while True:
-            for frame in container.decode(video=0):
+            for i,frame in enumerate(container.decode(video=0)):
                 if 0 < frame_skip:
                     frame_skip = frame_skip - 1
                     continue
@@ -121,27 +122,30 @@ def video():
                     start_time = time.time()
                     im, array = array_to_image(np.array(frame.to_image()))
                     image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
+                    
                     num = c_int(0)
-                    pnum = pointer(num)
-                    predict_image(net, im)
-                    dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-                    num = pnum[0]
-                    if (nms): do_nms_obj(dets, num, meta.classes, nms);
-                    # res = []
-                    for j in range(num):
-                        print('Debug0')
-                        for i in range(meta.classes):
-                            print('Debug1')
-                            if dets[j].prob[i] > 0:
-                                b = dets[j].bbox
-                                x1 = int(b.x - b.w / 2.)
-                                y1 = int(b.y - b.h / 2.)
-                                x2 = int(b.x + b.w / 2.)
-                                y2 = int(b.y + b.h / 2.)
-                                print((x1,y1),(x2,y2))
-                                cv2.rectangle(array, (x1, y1), (x2, y2), classes_box_colors[i], 2)
-                                cv2.puttext(array, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.line_aa)
-                                print('Detected: {}'.format(meta.names[i]))
+                    if i % 3 == 0:
+                        pnum = pointer(num)
+                        predict_image(net, im)
+                        dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
+                        num = pnum[0]
+                        if (nms): do_nms_obj(dets, num, meta.classes, nms);
+                        # res = []
+                        print("\n\n\n\nFounded {} objects: {} \n\n\n".format(len(num), ", ".join(num)))
+                        for j in range(num):
+                            print('Debug0')
+                            for i in range(meta.classes):
+                                print('Debug1')
+                                if dets[j].prob[i] > 0:
+                                    b = dets[j].bbox
+                                    x1 = int(b.x - b.w / 2.)
+                                    y1 = int(b.y - b.h / 2.)
+                                    x2 = int(b.x + b.w / 2.)
+                                    y2 = int(b.y + b.h / 2.)
+                                    print((x1,y1),(x2,y2))
+                                    cv2.rectangle(array, (x1, y1), (x2, y2), classes_box_colors[i], 2)
+                                    cv2.puttext(array, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.line_aa)
+                                    print('Detected: {}'.format(meta.names[i]))
                     cv2.imshow('Original', image) 
                     cv2.imshow('Output', array)
                     cv2.waitKey(1)

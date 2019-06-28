@@ -13,7 +13,8 @@ def commandsAPI():
     drone.flip_forwardright() 
     sleep(4)
     drone.land()
-
+    sleep(2)
+    drone.quit()
 
 def commandsPacket():
     pkt = protocol.Packet(0x0054)
@@ -30,7 +31,8 @@ def commandsPacket():
     pkt.add_byte(0x00)
     pkt.fixup()
     drone.send_packet(pkt)
-
+    sleep(2)
+    drone.quit()
 
 def main():
    print('Commands run by sending packets UDP')
