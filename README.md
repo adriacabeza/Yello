@@ -88,8 +88,8 @@ To execute orderts to the drone, you have to send packets with the hex code of t
 | 0x0030 | Take Picture|
 | 0x005d | Throw & Go  |
 
-Or use the Tellopy API and call a method that does it for you. Let's see some examples with both options (if you want to run them you can find them in commands_test.py) :
 
+Or use the Tellopy API and call a method that does it for you. Let's see some examples with both options (if you want to run them you can find them in commands_test.py):
 
 **Sending the packet**
 

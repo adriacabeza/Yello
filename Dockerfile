@@ -6,13 +6,14 @@ MAINTAINER adriacabeza
 WORKDIR /root
 
 # DARKNET
-
-# INSTALL
+## INSTALL
 RUN \
 	apt-get update && apt-get install -y \
 	autoconf \
 	automake \
 	libtool \
+	vim \ 
+	tmux \
 	build-essential \
 	git \
 	python-pip \
@@ -27,32 +28,36 @@ RUN \
 	libswscale-dev \
 	libavresample-dev 
 
-# BUILD REPOSITORY
+## BUILD REPOSITORY
 RUN \
 	git clone https://github.com/pjreddie/darknet && \
 	cd darknet && \
 	make
 
-# DOWNLOAD TINY YOLO WEIGHTS 
+## DOWNLOAD TINY YOLO WEIGHTS 
 RUN \
 	wget https://pjreddie.com/media/files/yolov3-tiny.weights  >/dev/null 2>&1
 
-# TESTING 
+## TESTING 
 RUN \
 	cd darknet/ && \
 	./darknet && \
 	./darknet detector test cfg/coco.data cfg/yolov3-tiny.cfg /root/yolov3-tiny.weights data/dog.jpg
 
-# TELLOPY
-
-# BUILD REPOSITORY 
+# TELLOPY	
+## BUILD REPOSITORY 
 RUN \
 	git clone https://github.com/hanyazou/TelloPy.git 
-# TO BE ADDED: insert a git clone of my repository
+
+# YELLO
+## BUILD REPOSITORY
+RUN \
+	git clone https://github.com/adriacabeza/Yello.git 
 
 # INSTALL DEPENDENCIES
 ADD requirements.txt .
 RUN pip install -r requirements.txt 
+
 
 # default command
 CMD ["bash"]
