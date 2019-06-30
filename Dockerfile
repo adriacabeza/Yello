@@ -44,15 +44,11 @@ RUN \
 	./darknet && \
 	./darknet detector test cfg/coco.data cfg/yolov3-tiny.cfg /root/yolov3-tiny.weights data/dog.jpg
 
-# TELLOPY	
-## BUILD REPOSITORY 
-RUN \
-	git clone https://github.com/hanyazou/TelloPy.git 
 
 # YELLO
 ## BUILD REPOSITORY
-#RUN \
-#	git clone https://github.com/adriacabeza/Yello.git 
+RUN \
+	git clone https://github.com/adriacabeza/Yello.git 
 
 # INSTALL DEPENDENCIES
 ADD requirements.txt .

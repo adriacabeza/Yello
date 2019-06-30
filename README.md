@@ -75,6 +75,26 @@ car: 62%
 bicycle: 59%
 ````
 
+## Demo video with Tiny-Yolo
+
+If you want to run Yello and see how it works, you can run it by typing:
+
+```python
+# cd Yello
+# python yello.py 
+
+```
+Then, afeter setting a connection to the drone and preparing the video stream, two windows will show up, the original and the one with predictions. 
+
+![](images/predictions.jpg)
+
+## Additional information about the drone
+
+- **Tello communication protocol** = UDP
+- **Tello IP** = 192.168.10.1
+- **Tello Port for commands** = 8899
+- **Tello Port for video** = 6038
+
 
 ## Execute orders to the drone
 > for more information check [TelloPy](https://github.com/hanyazou/TelloPy/tree/develop-0.7.0/tellopy/_internal)
@@ -105,7 +125,7 @@ pkt.fixup()
 drone.send_packet(pkt)
 sleep(2)
 
-# flip to the right
+# flip to the right, if you have less than 60% of battery comment lines until land
 pkt = protocol.Packet(0x005c, 0x70)
 pkt.add_byte(4)
 pkt.fixup()
@@ -130,6 +150,7 @@ drone.wait_for_connection(60.0)
 drone.take_off()
 sleep(2)
 
+# flip to the right, if you have less than 60% of battery comment lines until drone.land()
 drone.flip_forwardright()
 sleep(2)
 
@@ -138,14 +159,4 @@ drone.land()
 
 However it really depends on what you want to do since there are several different structures of packets. If you want to know more about how it works check the source code of the API. 
 
-
-## Demo video with Tiny-Yolo
-## Tello with markers
-
-## Additional information about the drone
-
-- **Tello communication protocol** = UDP
-- **Tello IP** = 192.168.10.1
-- **Tello Port for commands** = 8899
-- **Tello Port for video** = 6038
 

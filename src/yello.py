@@ -16,10 +16,10 @@ import numpy as np
 
 #TODO: change defaults to the ones from docker
 parser = argparse.ArgumentParser(description='Insert parameters for Yello')
-parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/home/adria/Documents/darknet/libdarknet.so")
-parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg")
-parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/home/adria/Documents/darknet/cfg/tiny.data")
-parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/home/adria/Documents/darknet/yolov3-tiny.weights")
+parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/root/darknet/libdarknet.so")
+parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/root/darknet/cfg/yolov3-tiny.cfg")
+parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/root/Yello/tiny.data")
+parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/root/darknet/yolov3-tiny.weights")
 args = parser.parse_args()
 
 drone = tellopy.Tello()
