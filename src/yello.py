@@ -17,7 +17,7 @@ import numpy as np
 parser = argparse.ArgumentParser(description='Insert parameters for Yello')
 parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/root/darknet/libdarknet.so")
 parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/root/darknet/cfg/yolov3-tiny.cfg")
-parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/root/Yello/tiny.data")
+parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/root/Yello/src/tiny.data")
 parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/root/darknet/yolov3-tiny.weights")
 args = parser.parse_args()
 
