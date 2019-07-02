@@ -83,10 +83,10 @@ controls = {
     'right shift': 'down',
     'q': 'counter_clockwise',
     'e': 'clockwise',
-    'i': lambda speed: self.drone.flip_forward(),
-    'k': lambda speed: self.drone.flip_back(),
-    'j': lambda speed: self.drone.flip_left(),
-    'l': lambda speed: self.drone.flip_right(),
+    'i': lambda speed: drone.flip_forward(),
+    'k': lambda speed: drone.flip_back(),
+    'j': lambda speed: drone.flip_left(),
+    'l': lambda speed: drone.flip_right(),
     'left': lambda drone, speed: drone.counter_clockwise(speed*2),
     'right': lambda drone, speed: drone.clockwise(speed*2),
     'up': lambda drone, speed: drone.up(speed*2),
@@ -154,7 +154,7 @@ key_listener = keyboard.Listener(on_press=on_press,on_release=on_release)
 key_listener.start()
 
 def on_press(keyname):
-    if self.keydown:
+    if keydown:
             return
         try:
             keydown = True
@@ -349,7 +349,8 @@ def video():
 
 
 def main():
-   video()
+    # check if pygame is worthy for dealing with keys pressed
+    video()
 
 
 if __name__ == '__main__':
