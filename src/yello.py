@@ -9,12 +9,11 @@ import cv2.cv2 as cv2
 import av
 import argparse
 import traceback
-
+from pynput import keyboard
 from ctypes import *
 import numpy as np
 
 
-#TODO: change defaults to the ones from docker
 parser = argparse.ArgumentParser(description='Insert parameters for Yello')
 parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/root/darknet/libdarknet.so")
 parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/root/darknet/cfg/yolov3-tiny.cfg")
@@ -22,9 +21,186 @@ parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path 
 parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/root/darknet/yolov3-tiny.weights")
 args = parser.parse_args()
 
+
 drone = tellopy.Tello()
 drone.connect()
 drone.wait_for_connection(30.0)
+drone.subscribe(drone.EVENT_FLIGHT_DATA, flight_data_handler)
+drone.subscribe(drone.EVENT_FILE_RECEIVED, handle_flight_received)
+
+prev_flight_data = None
+video_player = None
+video_recorder = None
+font = None
+keydown = None
+wid = None
+speed = 50
+date_fmt = '%Y-%m-%d_%H%M%S'
+
+def toggle_recording(drone, speed):
+    global video_recorder
+    global date_fmt
+    if speed == 0:
+        return
+
+    if video_recorder:
+        # already recording, so stop
+        video_recorder.stdin.close()
+        print('Video saved to %s' % video_recorder.video_filename)
+        video_recorder = None
+        return
+
+    # start a new recording
+    filename = '%s/Pictures/tello-%s.mp4' % (os.getenv('HOME'),
+                                             datetime.datetime.now().strftime(date_fmt))
+    video_recorder = Popen([
+        'mencoder', '-', '-vc', 'x264', '-fps', '30', '-ovc', 'copy',
+        '-of', 'lavf', '-lavfopts', 'format=mp4',
+        # '-ffourcc', 'avc1',
+        # '-really-quiet',
+        '-o', filename,
+    ], stdin=PIPE)
+    video_recorder.video_filename = filename
+    print('Recording video to %s' % filename)
+
+def take_picture(drone, speed):
+    if speed == 0:
+        return
+    drone.take_picture()
+
+def palm_land(drone, speed):
+    if speed == 0:
+        return
+    drone.palm_land()
+
+controls = {
+    'w': 'forward',
+    's': 'backward',
+    'a': 'left',
+    'd': 'right',
+    'space': 'up',
+    'left shift': 'down',
+    'right shift': 'down',
+    'q': 'counter_clockwise',
+    'e': 'clockwise',
+    'i': lambda speed: self.drone.flip_forward(),
+    'k': lambda speed: self.drone.flip_back(),
+    'j': lambda speed: self.drone.flip_left(),
+    'l': lambda speed: self.drone.flip_right(),
+    'left': lambda drone, speed: drone.counter_clockwise(speed*2),
+    'right': lambda drone, speed: drone.clockwise(speed*2),
+    'up': lambda drone, speed: drone.up(speed*2),
+    'down': lambda drone, speed: drone.down(speed*2),
+    'tab': lambda drone, speed: drone.takeoff(),
+    'backspace': lambda drone, speed: drone.land(),
+    'p': palm_land,
+    'r': toggle_recording,
+    'z': toggle_zoom,
+    'enter': take_picture,
+    'return': take_picture
+}
+
+
+class FlightDataDisplay(object):
+    _value = None
+    _surface = None
+    _update = None
+    def __init__(self, key, format, colour=(255,255,255), update=None):
+        self._key = key
+        self._format = format
+        self._colour = colour
+
+        if update:
+            self._update = update
+        else:
+            self._update = lambda drone,data: getattr(data, self._key)
+
+    def update(self, drone, data):
+        new_value = self._update(drone, data)
+        if self._value != new_value:
+            self._value = new_value
+            self._surface = font.render(self._format % (new_value,), True, self._colour)
+        return self._surface
+
+def update_hud(hud, drone, flight_data):
+    (w,h) = (158,0) # width available on side of screen in 4:3 mode
+    blits = []
+    for element in hud:
+        surface = element.update(drone, flight_data)
+        if surface is None:
+            continue
+        blits += [(surface, (0, h))]
+        # w = max(w, surface.get_width())
+        h += surface.get_height()
+    h += 64  # add some padding
+    overlay = pygame.Surface((w, h), pygame.SRCALPHA)
+    overlay.fill((0,0,0)) # remove for mplayer overlay mode
+    for blit in blits:
+        overlay.blit(*blit)
+    pygame.display.get_surface().blit(overlay, (0,0))
+    pygame.display.update(overlay.get_rect())
+
+
+hud = [
+    FlightDataDisplay('height', 'ALT %3d'),
+    FlightDataDisplay('ground_speed', 'SPD %3d'),
+    FlightDataDisplay('battery_percentage', 'BAT %3d%%'),
+    FlightDataDisplay('wifi_strength', 'NET %3d%%'),
+    FlightDataDisplay(None, 'CAM %s', update=flight_data_mode),
+    FlightDataDisplay(None, '%s', colour=(255, 0, 0), update=flight_data_recording),
+]
+
+key_listener = keyboard.Listener(on_press=on_press,on_release=on_release)
+key_listener.start()
+
+def on_press(keyname):
+    if self.keydown:
+            return
+        try:
+            keydown = True
+            keyname = str(keyname).strip('\'')
+            print('+' + keyname)
+            if keyname == 'Key.esc':
+                drone.quit()
+                exit(0)
+            if keyname in controls:
+                key_handler = controls[keyname]
+                if isinstance(key_handler, str):
+                    getattr(drone, key_handler)(speed)
+                else:
+                    key_handler(speed)
+        except AttributeError:
+            print('special key {0} pressed'.format(keyname))
+
+def on_release(keyname):
+        keydown = False
+        keyname = str(keyname).strip('\'')
+        print('-' + keyname)
+        if keyname in controls:
+            key_handler = controls[keyname]
+            if isinstance(key_handler, str):
+                getattr(drone, key_handler)(0)
+            else:
+                key_handler(0)
+
+def flightDataHandler(event, sender, data):
+    global prev_flight_data
+    text = str(data)
+    if prev_flight_data != text:
+        update_hud(hud, sender, data)
+        prev_flight_data = text
+
+
+def handleFileReceived(event, sender, data):
+    global date_fmt
+    # Create a file in ~/Pictures/ to receive image data from the drone.
+    path = '%s/Pictures/tello-%s.jpeg' % (
+        os.getenv('HOME'),
+        datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+    with open(path, 'wb') as fd:
+        fd.write(data)
+    print('Saved photo to %s' % path)
+
 
 
 class BOX(Structure):
@@ -114,6 +290,7 @@ def video():
         # skip first 300 frames
         frame_skip = 300
         while True:
+            time.sleep(0.3)
             for i,frame in enumerate(container.decode(video=0)):
                 if 0 < frame_skip:
                     frame_skip = frame_skip - 1
@@ -165,6 +342,7 @@ def video():
         traceback.print_exception(exc_type, exc_value, exc_traceback)
         print(ex)
     finally:
+        print('Shutting down connection to drone...')
         drone.quit()
         cv2.destroyAllWindows()
 
