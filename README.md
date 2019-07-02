@@ -94,7 +94,12 @@ Then, afeter setting a connection to the drone and preparing the video stream, t
 - **Tello IP** = 192.168.10.1
 - **Tello Port for commands** = 8899
 - **Tello Port for video** = 6038
-
+- **Lights**:
+	- Flashing blue: charging 
+	- Solid blue: charged
+	- Flashing purple: booting up
+	- Flashing yellow fast: wifi network, waiting for connection 
+	- Flashing yellow: user connected 
 
 ## Execute orders to the drone
 > for more information check [TelloPy](https://github.com/hanyazou/TelloPy/tree/develop-0.7.0/tellopy/_internal)

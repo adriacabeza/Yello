@@ -11,6 +11,7 @@ RUN \
 	apt-get update && apt-get install -y \
 	autoconf \
 	automake \
+	mplayer \
 	libtool \
 	vim \ 
 	tmux \
