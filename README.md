@@ -13,8 +13,7 @@ Although  the weights of the model can be changed, I used the ones pretrained fr
 
 
 Moreover, you can add functionalities easily in the project. Already implemented functionalities:
-
-- Whenever it detects a person it takes a photo
+- https://www.youtube.com/watch?v=lcFNaKYZzaE&list=LL2s_aH9Icya9ej3nQZ_9TtQ&index=4&t=3647s
 
 ## Installation
 
@@ -79,14 +78,47 @@ bicycle: 59%
 
 If you want to run Yello and see how it works, you can run it by typing:
 
-```python
+```bash
+STILL NOT WORKING
 # cd Yello
 # python yello.py 
 
 ```
-Then, afeter setting a connection to the drone and preparing the video stream, two windows will show up, the original and the one with predictions. 
+Then, after setting a connection to the drone and preparing the video stream, two windows will show up, the original and the one with predictions. 
 
 ![](images/predictions.jpg)
+
+
+#### Controls
+
+```python
+controls = {
+    'w': 'forward',
+    's': 'backward',
+    'a': 'left',
+    'd': 'right',
+    'space': 'up',
+    'left shift': 'down',
+    'right shift': 'down',
+    'q': 'counter_clockwise',
+    'e': 'clockwise',
+    'i': lambda speed: drone.flip_forward(),
+    'k': lambda speed: drone.flip_back(),
+    'j': lambda speed: drone.flip_left(),
+    'l': lambda speed: drone.flip_right(),
+    'left': lambda drone, speed: drone.counter_clockwise(speed*2),
+    'right': lambda drone, speed: drone.clockwise(speed*2),
+    'up': lambda drone, speed: drone.up(speed*2),
+    'down': lambda drone, speed: drone.down(speed*2),
+    'tab': lambda drone, speed: drone.takeoff(),
+    'backspace': lambda drone, speed: drone.land(),
+    'p': palm_land,
+    'r': toggle_recording,
+    'z': toggle_zoom,
+    'enter': take_picture,
+    'return': take_picture
+}
+```
 
 ## Additional information about the drone
 
