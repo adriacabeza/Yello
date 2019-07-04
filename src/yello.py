@@ -5,7 +5,7 @@ import struct
 import sys
 import os
 import tellopy
-import cv2.cv2 as cv2  
+import cv2  
 import av
 import argparse
 import traceback
@@ -156,21 +156,21 @@ key_listener.start()
 def on_press(keyname):
     if keydown:
             return
-        try:
-            keydown = True
-            keyname = str(keyname).strip('\'')
-            print('+' + keyname)
-            if keyname == 'Key.esc':
-                drone.quit()
-                exit(0)
-            if keyname in controls:
-                key_handler = controls[keyname]
-                if isinstance(key_handler, str):
-                    getattr(drone, key_handler)(speed)
-                else:
-                    key_handler(speed)
-        except AttributeError:
-            print('special key {0} pressed'.format(keyname))
+    try:
+        keydown = True
+        keyname = str(keyname).strip('\'')
+        print('+' + keyname)
+        if keyname == 'Key.esc':
+            drone.quit()
+            exit(0)
+        if keyname in controls:
+            key_handler = controls[keyname]
+            if isinstance(key_handler, str):
+                getattr(drone, key_handler)(speed)
+            else:
+                key_handler(speed)
+    except AttributeError:
+        print('special key {0} pressed'.format(keyname))
 
 def on_release(keyname):
         keydown = False
