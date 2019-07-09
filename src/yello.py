@@ -9,16 +9,15 @@ import cv2
 import av
 import argparse
 import traceback
-from pynput import keyboard
 from ctypes import *
 import numpy as np
 
 
 parser = argparse.ArgumentParser(description='Insert parameters for Yello')
-parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/root/darknet/libdarknet.so")
-parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/root/darknet/cfg/yolov3-tiny.cfg")
-parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/root/Yello/src/tiny.data")
-parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/root/yolov3-tiny.weights")
+parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/home/adria/Documents/darknet/libdarknet.so")
+parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg")
+parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/home/adria/Documents/darknet/cfg/tiny.data")
+parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/home/adria/Documents/darknet/yolov3-tiny.weights")
 args = parser.parse_args()
 
 
@@ -102,6 +101,7 @@ controls = {
     'up': lambda drone, speed: drone.up(speed*2),
     'down': lambda drone, speed: drone.down(speed*2),
     'tab': lambda drone, speed: drone.takeoff(),
+                        print(meta.names[meta.classes[0]])
     'backspace': lambda drone, speed: drone.land(),
     'p': palm_land,
     'r': toggle_recording,
@@ -259,7 +259,6 @@ network_predict.argtypes = [c_void_p, POINTER(c_float)]
 net = load_net(args.config.encode(),args.weights.encode(), 0)
 meta = load_meta(args.data.encode())
 
-#TODO: control drone with hands. Example: red for palmup --> stop, green for thumbsup --> go
 classes_box_colors = [(0, 0, 255), (0, 255, 0)]
 classes_font_colors = [(255, 255, 0), (0, 255, 255)]
 
@@ -277,7 +276,7 @@ def video():
     nms = .45
     global flight_data
     thresh=.5
-    hier_thresh=.3
+    hier_thresh=.5
     try:
         retry = 3
         container = None
@@ -292,52 +291,42 @@ def video():
         # skip first 300 frames
         frame_skip = 300
         while True:
-            for i,frame in enumerate(container.decode(video=0)):
+            for frame in container.decode(video=0):
                 if 0 < frame_skip:
                     frame_skip = frame_skip - 1
                     continue
                 try:
-                    start_time = time.time()
-                    im, array = array_to_image(np.array(frame.to_image()))
                     image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-                    
+                    im, array = array_to_image(image)
+                    image_original = im 
                     num = c_int(0)
-                    if i % 3 == 0:
-                        pnum = pointer(num)
-                        predict_image(net, im)
-                        dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-                        num = pnum[0]
-                        if (nms): do_nms_obj(dets, num, meta.classes, nms);
-                        # res = []
-                        print("\n\n\n\nFounded {} objects: {} \n\n\n".format(len(num), ", ".join(num)))
-                        for j in range(num):
-                            print('Debug0')
-                            for i in range(meta.classes):
-                                print('Debug1')
-                                if dets[j].prob[i] > 0:
-                                    b = dets[j].bbox
-                                    x1 = int(b.x - b.w / 2.)
-                                    y1 = int(b.y - b.h / 2.)
-                                    x2 = int(b.x + b.w / 2.)
-                                    y2 = int(b.y + b.h / 2.)
-                                    print((x1,y1),(x2,y2))
-                                    cv2.rectangle(array, (x1, y1), (x2, y2), classes_box_colors[i], 2)
-                                    cv2.puttext(array, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.line_aa)
-                                    print('Detected: {}'.format(meta.names[i]))
-                    cv2.imshow('Original', image) 
-                    cv2.imshow('Output', array)
-                    cv2.waitKey(1)
-                    if frame.time_base < 1.0/60:
-                        time_base = 1.0/60
-                    else:
-                        time_base = frame.time_base
-                    frame_skip = int((time.time() - start_time)/time_base)
+                    
+                    pnum = pointer(num)
+                    predict_image(net, im)
+                    dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
+                    num = pnum[0]
+                    if (nms): do_nms_obj(dets, num, meta.classes, nms);
+                    print("\nFounded {} objects\n".format(num))
+                    for j in range(num):
+                        print(meta.classes)
+                        for i in range(meta.classes):
+                            if dets[j].prob[i] > 0:
+                                b = dets[j].bbox
+                                x1 = int(b.x - b.w / 2.)
+                                y1 = int(b.y - b.h / 2.)
+                                x2 = int(b.x + b.w / 2.)
+                                y2 = int(b.y + b.h / 2.)
+                                print((x1,y1),(x2,y2))
+                                cv2.rectangle(image, (x1, y1), (x2, y2), classes_box_colors[i], 2)
+                                cv2.puttext(image, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.line_aa)
+                                print('Detected: {}'.format(meta.names[i]))
+                    cv2.imshow('Output',image)
+
+
                 except Exception as exp:
                     print(exp)
-
             if cv2.waitKey(1) == ord('q'):
-                break        
-
+                break
     except Exception as ex:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
@@ -347,13 +336,81 @@ def video():
         drone.quit()
         cv2.destroyAllWindows()
 
+   
+
+def test():
+    container = av.open(drone.get_video_stream())
+    x = 200
+    y = 200
+    w = 224
+    h = 224
+    track_window = (x, y, w, h)
+    frame_skip=300
+    
+    for frame in container.decode(video=0):
+        if 0 < frame_skip:
+            frame_skip = frame_skip - 1
+            continue
+        image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
+        cv2.imshow("org",image)
+        k = cv2.waitKey(1)&0xff
+        if k == ord('q'):
+            #cv2.destroyWindow("org")
+            break
+            
+    drone.takeoff()
+    
+    while True:
+        for frame in container.decode(video=0):
+            if 0 < frame_skip:
+                frame_skip = frame_skip - 1
+                continue
+            
+            image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
+        
+            cv2.imshow("org",image)
+            key = cv2.waitKey(1)&0xff
+            print("key=",key,ord('q'))
+        
+            if key == ord('n'):  #n
+                drone.down(10)
+                sleep(5)
+            elif key==ord('u'):  #117:  #u
+                drone.up(10)
+                sleep(5)
+            elif key==ord('h'):  #104:  #h
+                drone.left(3)
+                sleep(1)
+            elif key==ord('j'):  #106:  #j
+                drone.right(3)
+                sleep(1)
+            elif key==ord('b'):  #backward
+                drone.backward(3)
+                sleep(1)
+            elif key==ord('f'):  #forward
+                drone.forward(3)
+                sleep(1)
+            elif key==ord('c'):  #clockwise
+                drone.clockwise(10)
+                sleep(1)    
+            elif key==ord('q'):  #quit
+                cv2.destroyAllWindows()
+                break
+            else:
+                continue
+        break
+    drone.down(50)
+    sleep(5)
+    drone.land()
+    sleep(5)
+    #drone.subscribe(drone.EVENT_FLIGHT_DATA, handler)
+    drone.quit()
+
 
 drone = tellopy.Tello()
 drone.connect()
 drone.wait_for_connection(10.0)
-drone.subscribe(drone.EVENT_FLIGHT_DATA, handler)
-key_listener = keyboard.Listener(on_press=on_press,on_release=on_release)
-key_listener.start()
+#drone.subscribe(drone.EVENT_FLIGHT_DATA, handler)
 
 def main():
     video()
