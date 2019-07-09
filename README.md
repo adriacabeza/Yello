@@ -22,10 +22,13 @@ To continue you need to have docker installed (follow the instructions here http
 docker build --no-cache -t yello .
 ```
 > NOTE: It can last several minutes to finish building.
-Then you will be able to do run the docker by typing:
+Then, after setting the DISPLAY environment variable and lettig docker use it, you will be able to do run the docker:
 
 ```
-docker run -it yello bash 
+export DISPLAY=":0.0" 
+xhost + 
+docker run -ti --rm -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix yello bash
+
 ```
 
 To test if everything went correct, you can run a test with tiny-yolo:
