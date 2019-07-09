@@ -18,15 +18,9 @@ parser = argparse.ArgumentParser(description='Insert parameters for Yello')
 parser.add_argument('--library','--l', type=str, help = 'Insert the library path of libdarknet.so', default= "/root/darknet/libdarknet.so")
 parser.add_argument('--config','--g', type=str, help= 'Insert the cfg file path of the model', default="/root/darknet/cfg/yolov3-tiny.cfg")
 parser.add_argument('--data', '--d', type=str, help= 'Insert the data file path of the model', default="/root/Yello/src/tiny.data")
-parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/root/darknet/yolov3-tiny.weights")
+parser.add_argument('--weights', '--w', type=str, help= 'Insert the weight file path of the model', default="/root/yolov3-tiny.weights")
 args = parser.parse_args()
 
-
-drone = tellopy.Tello()
-drone.connect()
-drone.wait_for_connection(30.0)
-drone.subscribe(drone.EVENT_FLIGHT_DATA, flight_data_handler)
-drone.subscribe(drone.EVENT_FILE_RECEIVED, handle_flight_received)
 
 prev_flight_data = None
 video_player = None
@@ -36,6 +30,22 @@ keydown = None
 wid = None
 speed = 50
 date_fmt = '%Y-%m-%d_%H%M%S'
+
+"""
+def flight_data_handler(event, sender, data):
+    text = str(data)
+    global prev_flight_data
+    if prev_flight_data != text:
+	prev_flight_data = text
+        print(flight_data)
+"""
+
+def handler(event, sender, data, **args):
+    global flight_data
+    drone = sender
+    if event is drone.EVENT_FLIGHT_DATA:
+        flight_data = data
+        print(flight_data)
 
 def toggle_recording(drone, speed):
     global video_recorder
@@ -95,9 +105,6 @@ controls = {
     'backspace': lambda drone, speed: drone.land(),
     'p': palm_land,
     'r': toggle_recording,
-    'z': toggle_zoom,
-    'enter': take_picture,
-    'return': take_picture
 }
 
 
@@ -141,18 +148,6 @@ def update_hud(hud, drone, flight_data):
     pygame.display.update(overlay.get_rect())
 
 
-hud = [
-    FlightDataDisplay('height', 'ALT %3d'),
-    FlightDataDisplay('ground_speed', 'SPD %3d'),
-    FlightDataDisplay('battery_percentage', 'BAT %3d%%'),
-    FlightDataDisplay('wifi_strength', 'NET %3d%%'),
-    FlightDataDisplay(None, 'CAM %s', update=flight_data_mode),
-    FlightDataDisplay(None, '%s', colour=(255, 0, 0), update=flight_data_recording),
-]
-
-key_listener = keyboard.Listener(on_press=on_press,on_release=on_release)
-key_listener.start()
-
 def on_press(keyname):
     if keydown:
             return
@@ -190,7 +185,7 @@ def flightDataHandler(event, sender, data):
         update_hud(hud, sender, data)
         prev_flight_data = text
 
-
+"""
 def handleFileReceived(event, sender, data):
     global date_fmt
     # Create a file in ~/Pictures/ to receive image data from the drone.
@@ -200,8 +195,14 @@ def handleFileReceived(event, sender, data):
     with open(path, 'wb') as fd:
         fd.write(data)
     print('Saved photo to %s' % path)
+"""
 
-
+hud = [
+    FlightDataDisplay('height', 'ALT %3d'),
+    FlightDataDisplay('ground_speed', 'SPD %3d'),
+    FlightDataDisplay('battery_percentage', 'BAT %3d%%'),
+    FlightDataDisplay('wifi_strength', 'NET %3d%%'),
+]
 
 class BOX(Structure):
     _fields_ = [("x", c_float),
@@ -274,6 +275,7 @@ def array_to_image(arr):
 
 def video():
     nms = .45
+    global flight_data
     thresh=.5
     hier_thresh=.3
     try:
@@ -290,7 +292,6 @@ def video():
         # skip first 300 frames
         frame_skip = 300
         while True:
-            time.sleep(0.3)
             for i,frame in enumerate(container.decode(video=0)):
                 if 0 < frame_skip:
                     frame_skip = frame_skip - 1
@@ -347,9 +348,14 @@ def video():
         cv2.destroyAllWindows()
 
 
+drone = tellopy.Tello()
+drone.connect()
+drone.wait_for_connection(10.0)
+drone.subscribe(drone.EVENT_FLIGHT_DATA, handler)
+key_listener = keyboard.Listener(on_press=on_press,on_release=on_release)
+key_listener.start()
 
 def main():
-    # check if pygame is worthy for dealing with keys pressed
     video()
 
 

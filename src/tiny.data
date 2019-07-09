@@ -1,6 +1,6 @@
 classes= 80
-train  = /home/adria/Documents/darknet/data/coco/trainvalno5k.txt
-valid  = coco_testdev
-names = /home/adria/Documents/darknet/data/coco.names
-backup = /home/adria/Documents/darknet/backup
+train  = /root/darknet/data/coco/trainvalno5k.txt
+valid  = /root/coco_testdev
+names = /root/darknet/data/coco.names
+backup = /root/darknet/backup
 
