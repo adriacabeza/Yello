@@ -101,7 +101,6 @@ controls = {
     'up': lambda drone, speed: drone.up(speed*2),
     'down': lambda drone, speed: drone.down(speed*2),
     'tab': lambda drone, speed: drone.takeoff(),
-                        print(meta.names[meta.classes[0]])
     'backspace': lambda drone, speed: drone.land(),
     'p': palm_land,
     'r': toggle_recording,
@@ -276,6 +275,7 @@ def video():
     nms = .45
     global flight_data
     thresh=.5
+    i = 0
     hier_thresh=.5
     try:
         retry = 3
@@ -296,33 +296,40 @@ def video():
                     frame_skip = frame_skip - 1
                     continue
                 try:
+                    start_time = time.time()
                     image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-                    im, array = array_to_image(image)
-                    image_original = im 
-                    num = c_int(0)
-                    
-                    pnum = pointer(num)
-                    predict_image(net, im)
-                    dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-                    num = pnum[0]
-                    if (nms): do_nms_obj(dets, num, meta.classes, nms);
-                    print("\nFounded {} objects\n".format(num))
-                    for j in range(num):
-                        print(meta.classes)
-                        for i in range(meta.classes):
-                            if dets[j].prob[i] > 0:
-                                b = dets[j].bbox
-                                x1 = int(b.x - b.w / 2.)
-                                y1 = int(b.y - b.h / 2.)
-                                x2 = int(b.x + b.w / 2.)
-                                y2 = int(b.y + b.h / 2.)
-                                print((x1,y1),(x2,y2))
-                                cv2.rectangle(image, (x1, y1), (x2, y2), classes_box_colors[i], 2)
-                                cv2.puttext(image, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.line_aa)
-                                print('Detected: {}'.format(meta.names[i]))
-                    cv2.imshow('Output',image)
-
-
+                    cv2.imshow("org",image)
+                    if i % 5 :
+                        im, array = array_to_image(image)
+                        image_original = im 
+                        num = c_int(0)
+                        image1 = image 
+                        pnum = pointer(num)
+                        predict_image(net, im)
+                        dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
+                        num = pnum[0]
+                        if (nms): do_nms_obj(dets, num, meta.classes, nms);
+                        print("\nFounded {} objects\n".format(num))
+                        for j in range(num):
+                            for i in range(meta.classes):
+                                if dets[j].prob[i] > 0:
+                                    b = dets[j].bbox
+                                    x1 = int(b.x - b.w / 2.)
+                                    y1 = int(b.y - b.h / 2.)
+                                    x2 = int(b.x + b.w / 2.)
+                                    y2 = int(b.y + b.h / 2.)
+                                    print((x1,y1),(x2,y2))
+                                    cv2.rectangle(image1, (x1, y1), (x2, y2), classes_box_colors[i], 2)
+                                    cv2.putText(image1, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2, cv2.line_aa)
+                                    print('Detected: {}'.format(meta.names[i]))
+                    cv2.waitKey(1)
+                    if frame.time_base < 1.0/60:
+                        time_base = 1.0/60
+                    else:
+                        time_base = frame.time_base
+                    frame_skip = int((time.time() - start_time)/time_base)
+                    i = i+1 
+                    cv2.imshow("output",image1)
                 except Exception as exp:
                     print(exp)
             if cv2.waitKey(1) == ord('q'):
