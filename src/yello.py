@@ -1,16 +1,19 @@
 import datetime
-from subprocess import Popen, PIPE
 import time
-import struct
 import sys
+import pygame
 import os
 import tellopy
 import cv2
 import av
 import argparse
 import traceback
-from ctypes import *
+
 import numpy as np
+
+from ctypes import *
+from subprocess import Popen, PIPE
+
 
 parser = argparse.ArgumentParser(description='Insert parameters for Yello')
 parser.add_argument('--library', '--l', type=str, help='Insert the library path of libdarknet.so',
@@ -404,15 +407,14 @@ def test():
 				continue
 		break
 	drone.down(50)
-	sleep(5)
+	time.sleep(5)
 	drone.land()
-	sleep(5)
+	time.sleep(5)
 	drone.quit()
 
 
 def main():
 	video()
-
 
 if __name__ == '__main__':
 	main()
