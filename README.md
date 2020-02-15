@@ -136,7 +136,7 @@ drone.land()
 
 However it really depends on what you want to do since there are several different structures of packets. If you want to know more about how it works check the source code of the API. 
 
-## Installation [OLD]
+## YELLO USING DOCKER
 
 First you have to clone the repository. 
 To continue you need to have docker installed (follow the instructions here https://docs.docker.com/install/). Then, to build the docker write in the repository folder: 
