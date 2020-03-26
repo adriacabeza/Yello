@@ -11,20 +11,10 @@ import traceback
 
 import numpy as np
 
+from src import *
 from ctypes import *
 from subprocess import Popen, PIPE
 
-
-parser = argparse.ArgumentParser(description='Insert parameters for Yello')
-parser.add_argument('--library', '--l', type=str, help='Insert the library path of libdarknet.so',
-					default="/home/adria/Documents/darknet/libdarknet.so")
-parser.add_argument('--config', '--g', type=str, help='Insert the cfg file path of the model',
-					default="/home/adria/Documents/darknet/cfg/yolov3-tiny.cfg")
-parser.add_argument('--data', '--d', type=str, help='Insert the data file path of the model',
-					default="/home/adria/Documents/darknet/cfg/tiny.data")
-parser.add_argument('--weights', '--w', type=str, help='Insert the weight file path of the model',
-					default="/home/adria/Documents/darknet/yolov3-tiny.weights")
-args = parser.parse_args()
 
 prev_flight_data = None
 video_player = None
@@ -63,8 +53,7 @@ def toggle_recording(drone, speed):
 		return
 
 	# start a new recording
-	filename = '%s/Pictures/tello-%s.mp4' % (os.getenv('HOME'),
-											 datetime.datetime.now().strftime(date_fmt))
+	filename = '%s/Pictures/tello-%s.mp4' % (os.getenv('HOME'), datetime.datetime.now().strftime(date_fmt))
 	video_recorder = Popen([
 		'mencoder', '-', '-vc', 'x264', '-fps', '30', '-ovc', 'copy',
 		'-of', 'lavf', '-lavfopts', 'format=mp4',
@@ -203,81 +192,15 @@ hud = [
 ]
 
 
-# LOADING FUNCTIONS FROM DARKNET LIBRARY .SO
-class BOX(Structure):
-	_fields_ = [("x", c_float),
-				("y", c_float),
-				("w", c_float),
-				("h", c_float)]
-
-
-class DETECTION(Structure):
-	_fields_ = [("bbox", BOX),
-				("classes", c_int),
-				("prob", POINTER(c_float)),
-				("mask", POINTER(c_float)),
-				("objectness", c_float),
-				("sort_class", c_int)]
-
-
-class IMAGE(Structure):
-	_fields_ = [("w", c_int),
-				("h", c_int),
-				("c", c_int),
-				("data", POINTER(c_float))]
-
-
-class METADATA(Structure):
-	_fields_ = [("classes", c_int),
-				("names", POINTER(c_char_p))]
-
-
-lib = CDLL(args.library, RTLD_GLOBAL)
-lib.network_width.argtypes = [c_void_p]
-lib.network_width.restype = c_int
-lib.network_height.argtypes = [c_void_p]
-lib.network_height.restype = c_int
-load_net = lib.load_network
-
-get_network_boxes = lib.get_network_boxes
-get_network_boxes.argtypes = [c_void_p, c_int, c_int, c_float, c_float, POINTER(c_int), c_int, POINTER(c_int)]
-get_network_boxes.restype = POINTER(DETECTION)
-
-do_nms_obj = lib.do_nms_obj
-do_nms_obj.argtypes = [POINTER(DETECTION), c_int, c_int, c_float]
-
-load_meta = lib.get_metadata
-lib.get_metadata.argtypes = [c_char_p]
-lib.get_metadata.restype = METADATA
-
-predict_image = lib.network_predict_image
-predict_image.argtypes = [c_void_p, IMAGE]
-predict_image.restype = POINTER(c_float)
-
-network_predict = lib.network_predict
-network_predict.argtypes = [c_void_p, POINTER(c_float)]
-
-net = load_net(args.config.encode(), args.weights.encode(), 0)
-meta = load_meta(args.data.encode())
-
-classes_box_colors = [(0, 0, 255), (0, 255, 0)]
-classes_font_colors = [(255, 255, 0), (0, 255, 255)]
-
-
-def array_to_image(arr):
-	arr = arr.transpose(2, 0, 1)
-	c, h, w = arr.shape[0:3]
-	arr = np.ascontiguousarray(arr.flat, dtype=np.float32) / 255.0
-	data = arr.ctypes.data_as(POINTER(c_float))
-	im = IMAGE(w, h, c, data)
-	return im, arr
-
-
 def video():
-	nms = .45
+	net = TFNET({
+		'model': MODEL_PATH
+		'load': WEIGHTS_PATH
+		'threshold': MODEL_THRESHOLD
+	})
+	
 	global flight_data
-	thresh = .5
-	hier_thresh = .5
+	colors = [tuple(255* np.random.rand(3)) for _ in range(10)]
 	try:
 		retry = 3
 		container = None
@@ -298,40 +221,25 @@ def video():
 					continue
 				try:
 					start_time = time.time()
-					image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-					cv2.imshow("org", image)
-					im, array = array_to_image(image)
-					image_original = im
-					num = c_int(0)
-					image1 = image
-					pnum = pointer(num)
-					predict_image(net, im)
-					dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-					num = pnum[0]
-					if nms:
-						do_nms_obj(dets, num, meta.classes, nms)
-					print("\nFounded {} objects\n".format(num))
-					for j in range(num):
-						for i in range(meta.classes):
-							if dets[j].prob[i] > 0:
-								b = dets[j].bbox
-								x1 = int(b.x - b.w / 2.)
-								y1 = int(b.y - b.h / 2.)
-								x2 = int(b.x + b.w / 2.)
-								y2 = int(b.y + b.h / 2.)
-								print((x1, y1), (x2, y2))
-								cv2.rectangle(image1, (x1, y1), (x2, y2), classes_box_colors[i], 2)
-								cv2.putText(image1, meta.names[i], (x1, y1 - 20), 1, 1, classes_font_colors[i], 2,
-											cv2.line_aa)
-								print('Detected: {}'.format(meta.names[i]))
-					cv2.waitKey(1)
+					cv2.imshow("org", frame)
+					results = net.return_predict(frame)
+					print("\nFounded {} objects\n".format(results))
+					for color, result in zip(colors, results):
+						tl = (result['topleft']['x'], result['topleft']['y'])
+                				br = (result['bottomright']['x'], result['bottomright']['y'])
+				                label = result['label']
+				                confidence = result['confidence']
+				                text = '{}: {:.0f}%'.format(label, confidence * 100)
+				                frame = cv2.rectangle(frame, tl, br, color, 5)
+				                frame = cv2.putText(frame, text, tl, cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+           				cv2.imshow('frame', frame)
+           				print('FPS {:.1f}'.format(1 / (time.time() - start_time)))							
 					# uploading frame rate
 					if frame.time_base < 1.0 / 20:
 						time_base = 1.0 / 20
 					else:
 						time_base = frame.time_base
 					frame_skip = int((time.time() - start_time) / time_base)
-					cv2.imshow("output", image1)
 				except Exception as exp:
 					print(exp)
 			if cv2.waitKey(1) == ord('q'):
@@ -346,75 +254,5 @@ def video():
 		cv2.destroyAllWindows()
 
 
-def test():
-	container = av.open(drone.get_video_stream())
-	x = 200
-	y = 200
-	w = 224
-	h = 224
-	track_window = (x, y, w, h)
-	frame_skip = 300
-
-	for frame in container.decode(video=0):
-		if 0 < frame_skip:
-			frame_skip = frame_skip - 1
-			continue
-		image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-		cv2.imshow("org", image)
-		k = cv2.waitKey(1) & 0xff
-		if k == ord('q'):
-			# cv2.destroyWindow("org")
-			break
-
-	drone.takeoff()
-	while True:
-		for frame in container.decode(video=0):
-			if 0 < frame_skip:
-				frame_skip = frame_skip - 1
-				continue
-
-			image = cv2.cvtColor(np.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-
-			cv2.imshow("org", image)
-			key = cv2.waitKey(1) & 0xff
-			print("key=", key, ord('q'))
-
-			if key == ord('n'):  # n
-				drone.down(10)
-				time.sleep(5)
-			elif key == ord('u'):  # 117:  #u
-				drone.up(10)
-				time.sleep(5)
-			elif key == ord('h'):  # 104:  #h
-				drone.left(3)
-				time.sleep(1)
-			elif key == ord('j'):  # 106:  #j
-				drone.right(3)
-				time.sleep(1)
-			elif key == ord('b'):  # backward
-				drone.backward(3)
-				time.sleep(1)
-			elif key == ord('f'):  # forward
-				drone.forward(3)
-				time.sleep(1)
-			elif key == ord('c'):  # clockwise
-				drone.clockwise(10)
-				time.sleep(1)
-			elif key == ord('q'):  # quit
-				cv2.destroyAllWindows()
-				break
-			else:
-				continue
-		break
-	drone.down(50)
-	time.sleep(5)
-	drone.land()
-	time.sleep(5)
-	drone.quit()
-
-
-def main():
-	video()
-
 if __name__ == '__main__':
-	main()
+	video()

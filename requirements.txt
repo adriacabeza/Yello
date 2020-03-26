@@ -1,4 +1,7 @@
 pynput
+numpy
+tensorflow
+Cython
 av
 tellopy
 opencv-python

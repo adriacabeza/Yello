@@ -5,26 +5,36 @@
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/adriacabeza/Yello)
 
 <p align="center">
-	<img src="./logo.png"></img>
+	<img src="./images/logo.png"></img>
 </p>
-This repository contains a project that combines DJI Tello and Deep Learning (Tiny Yolo). The aim of this project is to   detect several objects using the drone. It uses [Darknet](https://github.com/pjreddie/darknet): an open source neural network framework written in C and CUDA) and [TelloPy](https://github.com/hanyazou/TelloPy) : a super friendly api for the drone. 
 
-Although  the weights of the model can be changed, I used the ones pretrained from the official website ([YOLOv3- tiny](https://pjreddie.com/media/files/yolov3-tiny.weights)). 
+This repository contains a project that combines DJI Tello and Deep Learning (Tiny Yolo). The aim of this project is to detect several objects using the drone. It uses [Darkflow](https://github.com/thtrieu/darkflow): an open source project that translates darknet to tensorflow) and [TelloPy](https://github.com/hanyazou/TelloPy) : a super friendly api for the drone. 
 
 # Installation
 
-Moreover, you can add functionalities easily in the project. Already implemented functionalities:
-- https://www.youtube.com/watch?v=lcFNaKYZzaE&list=LL2s_aH9Icya9ej3nQZ_9TtQ&index=4&t=3647s
+1. Setup environment
+2. Install dependencies
+```bash 
+$ pip3 install -r requirements.lock
+```
+3. Install Darkflow
+```bash
+$ source install_darkflow.sh
+```
+4. Install configuration files and weights
+```bash
+$ mkdir cfg
+$ cd cfg
+$ wget https://pjreddie.com/media/files/yolov2-tiny-voc.weights
+$ wget https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-tiny-voc.cfg
+```
 
 ## Demo video with Tiny-Yolo
 
 If you want to run Yello and see how it works, you can run it by typing:
 
 ```bash
-STILL NOT WORKING
-# cd Yello
-# python yello.py 
-
+$ python -m src --model yolov2-tiny-voc 
 ```
 Then, after setting a connection to the drone and preparing the video stream, two windows will show up, the original and the one with predictions. 
 
@@ -76,8 +86,7 @@ controls = {
 	- Flashing yellow: user connected 
 
 ## Execute orders to the drone
-> for more information check [TelloPy](https://github.com/hanyazou/TelloPy/tree/develop-0.7.0/tellopy/_internal)
-To execute orderts to the drone, you have to send packets with the hex code of the instruction that is desired. Here we can find some examples:
+> For more information check [TelloPy](https://github.com/hanyazou/TelloPy/tree/develop-0.7.0/tellopy/_internal), to execute orderts to the drone, you have to send packets with the hex code of the instruction that is desired. Here we can find some examples:
 
 | Code   | Instruction |
 |--------|-------------|
@@ -104,7 +113,7 @@ pkt.fixup()
 drone.send_packet(pkt)
 sleep(2)
 
-# flip to the right, if you have less than 60% of battery comment lines until land
+# flip to the right, if you have less than 60% of battery comment all the lines until land
 pkt = protocol.Packet(0x005c, 0x70)
 pkt.add_byte(4)
 pkt.fixup()
@@ -137,67 +146,5 @@ drone.land()
 ```
 
 However it really depends on what you want to do since there are several different structures of packets. If you want to know more about how it works check the source code of the API. 
-
-## YELLO USING DOCKER
-
-First you have to clone the repository. 
-To continue you need to have docker installed (follow the instructions here https://docs.docker.com/install/). Then, to build the docker write in the repository folder: 
-``` 
-docker build --no-cache -t yello .
-```
-> NOTE: It can last several minutes to finish building.
-Then, after setting the DISPLAY environment variable and lettig docker use it, you will be able to do run the docker:
-
-```
-export DISPLAY=":0.0" 
-xhost + 
-docker run -ti --rm -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix yello bash
-
-```
-
-To test if everything went correct, you can run a test with tiny-yolo:
-````
-# cd darknet 
-#./darknet detector test cfg/coco.data cfg/yolov3-tiny.cfg /root/yolov3-tiny.weights data/dog.jpg
-layer     filters    size              input                output
-    0 conv     32  3 x 3 / 1   416 x 416 x   3   ->   416 x 416 x  32
-    1 max          2 x 2 / 2   416 x 416 x  32   ->   208 x 208 x  32
-    2 conv     64  3 x 3 / 1   208 x 208 x  32   ->   208 x 208 x  64
-    3 max          2 x 2 / 2   208 x 208 x  64   ->   104 x 104 x  64
-    4 conv    128  3 x 3 / 1   104 x 104 x  64   ->   104 x 104 x 128
-    5 conv     64  1 x 1 / 1   104 x 104 x 128   ->   104 x 104 x  64
-    6 conv    128  3 x 3 / 1   104 x 104 x  64   ->   104 x 104 x 128
-    7 max          2 x 2 / 2   104 x 104 x 128   ->    52 x  52 x 128
-    8 conv    256  3 x 3 / 1    52 x  52 x 128   ->    52 x  52 x 256
-    9 conv    128  1 x 1 / 1    52 x  52 x 256   ->    52 x  52 x 128
-   10 conv    256  3 x 3 / 1    52 x  52 x 128   ->    52 x  52 x 256
-   11 max          2 x 2 / 2    52 x  52 x 256   ->    26 x  26 x 256
-   12 conv    512  3 x 3 / 1    26 x  26 x 256   ->    26 x  26 x 512
-   13 conv    256  1 x 1 / 1    26 x  26 x 512   ->    26 x  26 x 256
-   14 conv    512  3 x 3 / 1    26 x  26 x 256   ->    26 x  26 x 512
-   15 conv    256  1 x 1 / 1    26 x  26 x 512   ->    26 x  26 x 256
-   16 conv    512  3 x 3 / 1    26 x  26 x 256   ->    26 x  26 x 512
-   17 max          2 x 2 / 2    26 x  26 x 512   ->    13 x  13 x 512
-   18 conv   1024  3 x 3 / 1    13 x  13 x 512   ->    13 x  13 x1024
-   19 conv    512  1 x 1 / 1    13 x  13 x1024   ->    13 x  13 x 512
-   20 conv   1024  3 x 3 / 1    13 x  13 x 512   ->    13 x  13 x1024
-   21 conv    512  1 x 1 / 1    13 x  13 x1024   ->    13 x  13 x 512
-   22 conv   1024  3 x 3 / 1    13 x  13 x 512   ->    13 x  13 x1024
-   23 conv   1024  3 x 3 / 1    13 x  13 x1024   ->    13 x  13 x1024
-   24 conv   1024  3 x 3 / 1    13 x  13 x1024   ->    13 x  13 x1024
-   25 route  16
-   26 reorg              / 2    26 x  26 x 512   ->    13 x  13 x2048
-   27 route  26 24
-   28 conv   1024  3 x 3 / 1    13 x  13 x3072   ->    13 x  13 x1024
-   29 conv    425  1 x 1 / 1    13 x  13 x1024   ->    13 x  13 x 425
-   30 detection
-Loading weights from /root/yolo.weights...Done!
-data/dog.jpg: Predicted in 0.844487 seconds.
-dog: 57%
-car: 52%
-truck: 56%
-car: 62%
-bicycle: 59%
-````
 
 
