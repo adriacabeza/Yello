@@ -22,10 +22,7 @@ This repository contains a project that combines DJI Tello and Deep Learning (Ti
 ```bash 
 $ pip3 install -r requirements.lock
 ```
-3. Install Darkflow
-```bash
-$ source install_darkflow.sh
-```
+3. Install [Darkflow](https://github.com/thtrieu/darkflow.git)
 4. Install configuration files and weights
 ```bash
 $ mkdir cfg
