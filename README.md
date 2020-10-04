@@ -30,6 +30,11 @@ $ cd cfg
 $ wget https://pjreddie.com/media/files/yolov2-tiny-voc.weights
 $ wget https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-tiny-voc.cfg
 ```
+5. Install mencoder to record videos
+6. Run it:
+```python
+python3 src/yello.py
+``
 
 ## Demo video with Tiny-Yolo
 
