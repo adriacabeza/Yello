@@ -11,8 +11,8 @@
 >Note: Those weirds moments in the video are sideflips
 
 
-This repository contains a project that combines DJI Tello and Deep Learning (Tiny Yolo). The aim of this project is to detect several objects using the drone. It uses [Darkflow](https://github.com/thtrieu/darkflow): an open source project that translates darknet to tensorflow) and [TelloPy](https://github.com/hanyazou/TelloPy) : a super friendly api for the drone. A lot of work can still be done tho, this is just a toy thing, i.e. set actions when something is detected like take a photo when a person is detected, properly set the commands and test that everything works. 
-- Organize it
+This repository contains a project that combines DJI Tello and Deep Learning (Tiny Yolo). The aim of this project is to detect several objects using the drone. It uses [Darkflow](https://github.com/thtrieu/darkflow): an open source project that translates darknet to tensorflow) and [TelloPy](https://github.com/hanyazou/TelloPy) : a super friendly api for the drone. A lot of work can still be done tho (this is just a toy thing) i.e. set actions when something is detected like take a photo when it sees a person, properly set the commands or test that everything works (lol). 
+
 
 # Installation
 
