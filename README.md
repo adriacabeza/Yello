@@ -8,11 +8,7 @@
 	<img src="./images/logo.png"></img>
 </p>
 
-This repository contains a project that combines DJI Tello and Deep Learning (Tiny Yolo). The aim of this project is to detect several objects using the drone. It uses [Darkflow](https://github.com/thtrieu/darkflow): an open source project that translates darknet to tensorflow) and [TelloPy](https://github.com/hanyazou/TelloPy) : a super friendly api for the drone. **Still under construction**
-
-## TODO
-- Test it (my drone is in Barcelona and I am in quarantine).
-- Set actions when something is detected i.e. take a photo when a person is detected.
+This repository contains a project that combines DJI Tello and Deep Learning (Tiny Yolo). The aim of this project is to detect several objects using the drone. It uses [Darkflow](https://github.com/thtrieu/darkflow): an open source project that translates darknet to tensorflow) and [TelloPy](https://github.com/hanyazou/TelloPy) : a super friendly api for the drone. A lot of work can still be done tho, this is just a toy thing, i.e. set actions when something is detected like take a photo when a person is detected, properly set the commands and test that everything works. 
 - Organize it
 
 # Installation
@@ -45,36 +41,33 @@ $ python -m src --model yolov2-tiny-voc
 ```
 Then, after setting a connection to the drone and preparing the video stream, two windows will show up, the original and the one with predictions. 
 
-![](images/predictions.jpg)
+<div align="center">
+<img src="images/yello.gif"/>
+</div>
+> Note: Those weirds moments in the video are sideflips
 
 #### Controls
 
 ```python
 controls = {
-    'w': 'forward',
-    's': 'backward',
-    'a': 'left',
-    'd': 'right',
-    'space': 'up',
-    'left shift': 'down',
-    'right shift': 'down',
-    'q': 'counter_clockwise',
-    'e': 'clockwise',
-    'i': lambda speed: drone.flip_forward(),
-    'k': lambda speed: drone.flip_back(),
-    'j': lambda speed: drone.flip_left(),
-    'l': lambda speed: drone.flip_right(),
-    'left': lambda drone, speed: drone.counter_clockwise(speed*2),
-    'right': lambda drone, speed: drone.clockwise(speed*2),
-    'up': lambda drone, speed: drone.up(speed*2),
-    'down': lambda drone, speed: drone.down(speed*2),
-    'tab': lambda drone, speed: drone.takeoff(),
-    'backspace': lambda drone, speed: drone.land(),
-    'p': palm_land,
-    'r': toggle_recording,
-    'z': toggle_zoom,
-    'enter': take_picture,
-    'return': take_picture
+    'w': lambda: drone.forward(5),
+    'a': lambda: drone.left(5),
+    's': lambda:  drone.backward(5),
+    'd': lambda: drone.right(5),
+    'i': lambda: drone.flip_forward(),
+    'k': lambda: drone.flip_back(),
+    'j': lambda: drone.flip_left(),
+    'l': lambda: drone.flip_right(),
+    'Key.left': lambda : drone.counter_clockwise(10),
+    'Key.right': lambda : drone.clockwise(10),
+    'Key.up': lambda : drone.up(10),
+    'Key.down': lambda : drone.down(10),
+    'Key.tab': lambda: drone.takeoff(),
+    'Key.backspace': lambda: drone.land(),
+    'p': lambda: drone.palm_land(),
+    'Key.enter': lambda: drone.take_picture(),
+    'v': lambda: toggle_recording(),
+    'c': lambda: drone.clockwise_degrees(360),
 }
 ```
 
