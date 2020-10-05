@@ -42,7 +42,10 @@ If you want to run Yello and see how it works, you can run it by typing:
 ```bash
 $ python -m src --model yolov2-tiny-voc 
 ```
-Then, after setting a connection to the drone and preparing the video stream, one windows will show up with the predictions. 
+Then, after setting a connection to the drone and preparing the video stream, one window will show up with the predictions. 
+<p align="center">
+<img src="images/from_scratch.gif">
+</p>
 
 #### Controls
 
