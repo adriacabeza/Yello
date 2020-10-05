@@ -5,8 +5,11 @@
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/adriacabeza/Yello)
 
 <p align="center">
-	<img src="./images/logo.png"></img>
+<img src="images/yello.gif"/>
 </p>
+
+>Note: Those weirds moments in the video are sideflips
+
 
 This repository contains a project that combines DJI Tello and Deep Learning (Tiny Yolo). The aim of this project is to detect several objects using the drone. It uses [Darkflow](https://github.com/thtrieu/darkflow): an open source project that translates darknet to tensorflow) and [TelloPy](https://github.com/hanyazou/TelloPy) : a super friendly api for the drone. A lot of work can still be done tho, this is just a toy thing, i.e. set actions when something is detected like take a photo when a person is detected, properly set the commands and test that everything works. 
 - Organize it
@@ -39,12 +42,7 @@ If you want to run Yello and see how it works, you can run it by typing:
 ```bash
 $ python -m src --model yolov2-tiny-voc 
 ```
-Then, after setting a connection to the drone and preparing the video stream, two windows will show up, the original and the one with predictions. 
-
-<div align="center">
-<img src="images/yello.gif"/>
-</div>
-> Note: Those weirds moments in the video are sideflips
+Then, after setting a connection to the drone and preparing the video stream, one windows will show up with the predictions. 
 
 #### Controls
 
