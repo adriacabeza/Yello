@@ -30,19 +30,12 @@ $ wget https://pjreddie.com/media/files/yolov2-tiny-voc.weights
 $ wget https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-tiny-voc.cfg
 ```
 5. Install mencoder to record videos
-6. Run it:
+6. Then, after setting a connection to the drone and preparing the video stream you can run it and one window will show up with the predictions. 
+
 ```python
 python3 src/yello.py
-``
-
-## Demo video with Tiny-Yolo
-
-If you want to run Yello and see how it works, you can run it by typing:
-
-```bash
-$ python -m src --model yolov2-tiny-voc 
 ```
-Then, after setting a connection to the drone and preparing the video stream, one window will show up with the predictions. 
+
 <p align="center">
 <img src="images/from_scratch.gif">
 </p>
