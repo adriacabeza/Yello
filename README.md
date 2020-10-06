@@ -33,7 +33,7 @@ $ wget https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-tiny-voc.cfg
 6. Then, after setting a connection to the drone and preparing the video stream you can run it and one window will show up with the predictions. 
 
 ```python
-python3 src/yello.py
+$ python3 src/yello.py
 ```
 
 <p align="center">
